@@ -1,0 +1,118 @@
+const express = require('express');
+const router = express.Router();
+const request=require("../utlis/request");
+const cheerio=require("cheerio");
+const spiderUrl='https://music.163.com/discover';
+//将通用的页面的document返回出来
+let getDocument=async ()=>{
+    let data=await request('get',spiderUrl,{},{ua:"pc"});
+    let $=cheerio.load(data.body);
+    return $;
+};
+//获取主页上的热门歌单推荐
+router.get("/hotRecommend",(req,res,next)=>{
+    getDocument().then($=>{
+        let hotrecItmes={
+            desc:"hot_recommend",
+            count:0,
+            body:[]
+        };
+        let nums=0;
+        $('.m-cvrlst').eq(0).find("li").each((index,ele)=>{
+            let title=$(ele).find('.msk').attr("title");
+            let playListUrl=$(ele).find('.msk').attr("href");
+            let pic=$(ele).find("img").attr("src");
+            let count=$(ele).find(".nb").text();
+            hotrecItmes.body.push({
+                title,
+                playListUrl,
+                pic,
+                count
+            });
+            hotrecItmes.count=++nums;
+        });
+        res.send(hotrecItmes);
+    });
+});
+//获取主页上的新碟上架
+router.get("/newDisk",(req,res,next)=>{
+    getDocument().then($=>{
+        let newDisks={
+            desc:"newDisks",
+            count:0,
+            body:[]
+        };
+        let i=0;
+        $(".u-cover-alb1").each((index,ele)=>{
+            if (index<=9){
+                let pic=$(ele).find("img").attr("data-src");
+                let title=$(ele).find(".msk").attr("title");
+                let albumUrl=$(ele).find(".msk").attr("href");
+                let aut=$(ele).next().next();
+                let author=aut.attr("title");
+                let res=aut.html();
+                let a=cheerio.load(res);
+                let authorInfo=a(".s-fc3").attr("href");
+                newDisks.body.push({
+                    pic,title,albumUrl,author,authorInfo
+                });
+                newDisks.count=++i;
+            }
+        });
+        res.send(newDisks);
+    });
+});
+//获取主页上的榜单列表
+router.get("/musicTops",(req,res,next)=>{
+    getDocument().then($=>{
+        let musicTops={
+            desc:"musicTops",
+            count:30,
+            body:[]
+        };
+        $("#top-flag").find("dl").each((index,ele)=>{
+            let div=$(ele).find("dt").find(".cver");
+            let pic=$(div).find("img").attr("data-src");
+            let title=$(div).find("a").attr("title");
+            let musicTopUrl=$(div).find("a").attr("href");
+            let musicTop={
+                pic,title,musicTopUrl,list:[]
+            };
+            let lis=$(ele).find("dd").find("ol").find("li");
+            lis.each((i,e)=>{
+                let a=$(e).find(".nm");
+                let musicName=$(a).attr("title");
+                let musicUrl=$(a).attr("href");
+                musicTop.list.push({
+                    musicName,musicUrl
+                });
+            });
+            musicTops.body.push(musicTop);
+        });
+        res.send(musicTops);
+    });
+});
+//获取主页上的banner
+router.get("/indexBanner",(req,res,next)=>{
+    getDocument().then($=>{
+        let banner={
+            desc:"banner",
+            count:0,
+            body:[]
+        };
+        let script=$("script").eq(3).html();//获取script标签中的内容
+        let all=eval(script.substring(script.indexOf("["),script.length-2).replace(/[\r\n]/g,""));
+        // let reg=/picUrl : "(https?|http|ftp|file):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"/g;
+        let cou=0;
+        for (let i of all.keys()){
+            banner.body.push({
+                picUrl:all[i].picUrl,
+                url:all[i].url
+            });
+            banner.count=++cou;
+        }
+        banner.count=all.length;
+        res.send(banner);
+    });
+});
+module.exports=router;
