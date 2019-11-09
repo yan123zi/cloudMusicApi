@@ -13,5 +13,6 @@ before_install:
 addons:
   ssh_known_hosts:
     - 47.100.18.197
+
 after_success:
   - ssh travis@47.100.18.197 -o StrictHostKeyChecking=no "./bin/shell"
