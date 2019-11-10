@@ -14,4 +14,4 @@ addons:
   ssh_known_hosts:
   - 47.100.18.197
 after_success:
-  - ssh travis@47.100.18.197 -o StrictHostKeyChecking=no "cd projects && git clone https://github.com/yan123zi/cloudMusicApi.git && cd cloudMusicApi/bin && sh shell"
+  - ssh -tt travis@47.100.18.197 -o StrictHostKeyChecking=no < bin\shell
