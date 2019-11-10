@@ -1,0 +1,7 @@
+version: '3.1'
+services:
+  cloudMusicApi:
+    image: cloudmusicapi:v1
+    container_name: cloudmusicapi
+    ports:
+      - 3000:3000
