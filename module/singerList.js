@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const request = require("../utlis/request");
-//热门歌手
+//热门歌手列表
 router.get("/topArtists", (req, res, next) => {
     let data = {
         limit: req.query.limit || 50,
@@ -37,21 +37,27 @@ router.get("/topArtists", (req, res, next) => {
 
     initial 取值 a-z/A-Z
 */
-router.get("/category/:id", (req, res, next) => {
-    const data = {
-        categoryCode: req.params.id || '1001',
-        initial: (req.query.initial || '').toUpperCase().charCodeAt() || '',
-        offset: req.query.offset || 0,
-        limit: req.query.limit || 30,
-        total: true
-    };
-    request("post", "https://music.163.com/weapi/artist/list?csrf_token=", data, {
-        ua: "pc",
-        crypto: "weapi"
-    }).then(data => {
-        let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
-        res.send(result);
-    });
+//获取各分类歌手列表
+router.get("/category/:id?", (req, res, next) => {
+    let id = req.params.id;
+    if (id) {
+        const data = {
+            categoryCode: id || '1001',
+            initial: (req.query.initial || '').toUpperCase().charCodeAt() || '',
+            offset: req.query.offset || 0,
+            limit: req.query.limit || 30,
+            total: true
+        };
+        request("post", "https://music.163.com/weapi/artist/list?csrf_token=", data, {
+            ua: "pc",
+            crypto: "weapi"
+        }).then(data => {
+            let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
+            res.send(result);
+        });
+    } else {
+        res.send({message: "please input param of category id for singer -> 'id'"});
+    }
 });
 
 module.exports = router;

@@ -24,10 +24,10 @@ router.get("/allLeaderBoard", (req, res, next) => {
                 let a = $(e).find("a").eq(0);
                 let img = a.find("img");
                 let title = $(img).attr("alt");
-                let picUrl = $(img).attr("src");
-                let listUrl = $(a).attr("href");
+                let picUrl = $(img).attr("src").replace("?param=40y40","");
+                let topListId = parseInt($(a).attr("href").replace("/discover/toplist?id=",""));
                 musicList.list.push({
-                    title, picUrl, listUrl
+                    title, picUrl, topListId
                 });
                 c = i;
             });
@@ -40,8 +40,10 @@ router.get("/allLeaderBoard", (req, res, next) => {
     });
 });
 //每个榜单的详情除了评论
-router.get("/:id", (req, res, next) => {
+router.get("/:id?", (req, res, next) => {
     request("get", "https://music.163.com/discover/toplist?id=" + req.params.id, {}, {ua: "pc"}).then(data => {
+        let id=req.params.id;
+        if (id) {
         let $ = cheerio.load(data.body);
         let musicLearBoard = {
             desc: "musicBoard",
@@ -49,18 +51,21 @@ router.get("/:id", (req, res, next) => {
         };
         let musicList = eval($("#song-list-pre-cache").find("textarea").text());
         musicLearBoard.body = musicList;
-        musicLearBoard.collection = ($("#toplist-fav").find("i").text()).replace(")", "").replace("(", "");
-        musicLearBoard.share = ($("#toplist-share").find("i").text()).replace(")", "").replace("(", "");
-        musicLearBoard.comment = $("#comment-count").text();
-        musicLearBoard.playCount = $("#play-count").text();
-        musicLearBoard.picUrl = $(".u-cover-rank").find("img").attr("src");
+        musicLearBoard.collection = parseInt(($("#toplist-fav").find("i").text()).replace(")", "").replace("(", ""));
+        musicLearBoard.share = parseInt(($("#toplist-share").find("i").text()).replace(")", "").replace("(", ""));
+        musicLearBoard.comment = parseInt($("#comment-count").text());
+        musicLearBoard.playCount = parseInt($("#play-count").text());
+        musicLearBoard.picUrl = $(".u-cover-rank").find("img").attr("src").replace("?param=150y150","");
         musicLearBoard.boardName = $("h2.f-ff2").text();
         musicLearBoard.lastUpdate = $("span.sep.s-fc3").text();
-        musicLearBoard.updateTime = $("span.s-fc4").text();
+        musicLearBoard.updateTime = $("span.s-fc4").text().replace(/[（）]/g,"");
         musicLearBoard.count = musicLearBoard.body.length;
         // ($("link").eq(0).attr("href")).match(/id=\d+/g)[0].replace("id=","")
-        musicLearBoard.id = req.params.id;
+        musicLearBoard.id = parseInt(id);
         res.send(musicLearBoard);
+        }else {
+            res.send({message:"please input param of topList -> 'id'"});
+        }
     });
 });
 module.exports = router;

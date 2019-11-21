@@ -5,23 +5,23 @@ let getSongDetail=async (url)=>{
         let $=cheerio.load(data.body);
         let picUrl=$(".j-img").attr("data-src");
         let detail=$("div.cnt").eq(0);
-        let mv=detail.find("a[title='播放mv']").attr("href")||null;
+        let mv=parseInt(detail.find("a[title='播放mv']").attr("href").replace("/mv?id=",""))||null;
         let artists=detail.find("p.des").eq(0).find("a");
         let album=detail.find("p.des").eq(1).find("a");
         let name=detail.find("em").eq(0).text();
         let arts=[];
         artists.each((index,ele)=>{
-            let artName=$(ele).text();
-            let artUrl=$(ele).attr("href");
+            let artistName=$(ele).text();
+            let artistId=parseInt($(ele).attr("href").replace("/artist?id=",""));
             arts.push({
-                artName,artUrl
+                artistName,artistId
             });
         });
         let albumName=album.text();
-        let albumUrl=album.attr("href");
+        let albumId=parseInt(album.attr("href").replace("/album?id=",""));
         let time=parseInt($("meta[property='music:duration']").attr("content"));
         let songDetail={
-            name,picUrl, mv, artist: arts, album: {albumName, albumUrl}, time
+            name,picUrl, mv, artist: arts, album: {albumName, albumId}, time
         };
         return songDetail;
     });
