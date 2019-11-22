@@ -5,7 +5,7 @@ const cheerio = require("cheerio");
 const getSongDetail = require("../utlis/songDetails");
 //获取歌单详情
 router.get("/detail/:id?", (req, res, next) => {
-    let id = req.params.id;
+    let id = parseInt(req.params.id);
     if (id) {
         request("get", "https://music.163.com/playlist?id=" + id, {}, {ua: "pc"}).then(data => {
             let $ = cheerio.load(data.body);
@@ -111,29 +111,18 @@ router.get("/recommend/:id?", (req, res, next) => {
 router.get("/songList/:id?", (req, res, next) => {
     let id = req.params.id;
     if (id) {
-        request("get", "https://music.163.com/playlist?id=" + req.params.id, {}, {ua: "pc"}).then(data => {
-            let $ = cheerio.load(data.body);
-            let list = [];
-            let count = parseInt($("#playlist-track-count").text());
-            let songList = {
-                desc: "songList",
-                count: count,
-                body: []
-            };
-            // console.log(getSongDetail);
-            $("ul.f-hide").eq(0).find("li").each(async (index, ele) => {
-                let a = $(ele).find("a");
-                let songId = parseInt(a.attr("href").replace("/song?id=", ""));
-                let result = await getSongDetail(songId).catch(reason => {
-                    console.log(reason)
-                });
-                result.songId = songId;
-                list.push(result);
-                if (list.length === count) {
-                    songList.body = list;
-                    res.send(songList);
-                }
-            });
+        const data = {
+            id,
+            n: 100000,
+            s: req.query.s || 8
+        };
+        request(
+            'post', "https://music.163.com/weapi/v3/playlist/detail", data,
+            { ua: "pc",
+                crypto: "linuxapi"}
+        ).then(data=>{
+            let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
+            res.send(result);
         });
     } else {
         res.send({message: "please input param of playlist -> 'id'"});

@@ -4,4 +4,4 @@ services:
     image: cloudmusicapi:v1
     container_name: cloudmusicapi
     ports:
-      - 3000:3000
+      - 3100:3100

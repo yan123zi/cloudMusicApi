@@ -31,7 +31,7 @@ router.get("/categories",(req,res,next)=>{
     });
 });
 //获取所有歌单的信息（分页）
-router.get("/info",(req,res,next)=>{
+router.get("/list",(req,res,next)=>{
     //m-pl-container
     let offset=req.query.offset?"&offset="+req.query.offset:"";
     let cat=req.query.cat?"&cat="+req.query.cat:"";

@@ -40,7 +40,7 @@ router.get("/allLeaderBoard", (req, res, next) => {
     });
 });
 //每个榜单的详情除了评论
-router.get("/:id?", (req, res, next) => {
+router.get("/detail/:id?", (req, res, next) => {
     request("get", "https://music.163.com/discover/toplist?id=" + req.params.id, {}, {ua: "pc"}).then(data => {
         let id=req.params.id;
         if (id) {

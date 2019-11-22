@@ -1,6 +1,7 @@
 const request = require('request')
 const queryString = require('querystring')
-const weapi=require("../utlis/crypto");
+const weapi=require("../utlis/crypto").weapi;
+const linuxapi=require("../utlis/crypto").linuxapi;
 // request.debug = true // 开启可看到更详细信息
 
 const chooseUserAgent = ua => {
@@ -40,6 +41,16 @@ const createRequest = (method, url, data, options) => {
         if (options.crypto==="weapi"){
             data=weapi(data);
             // console.log(data)
+        }
+        if (options.crypto==="linuxapi"){
+            data = linuxapi({
+                method: method,
+                url: url.replace(/\w*api/, 'api'),
+                params: data
+            });
+            headers['User-Agent'] =
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36';
+            url = 'https://music.163.com/api/linux/forward';
         }
 
         const answer = {status: 500, body: {}};

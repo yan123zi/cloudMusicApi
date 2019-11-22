@@ -9,7 +9,7 @@ router.get("/detail/:id?",async (req,res,next)=>{
     let id=req.params.id;
     if (id) {
         let result = await getSongDetail(req.params.id);
-        result.url = parseInt(req.params.id);
+        // result.id = parseInt(req.params.id);
         console.log(getSongDetail);
         res.send(result);
     }else {

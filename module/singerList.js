@@ -40,7 +40,6 @@ router.get("/topArtists", (req, res, next) => {
 //获取各分类歌手列表
 router.get("/category/:id?", (req, res, next) => {
     let id = req.params.id;
-    if (id) {
         const data = {
             categoryCode: id || '1001',
             initial: (req.query.initial || '').toUpperCase().charCodeAt() || '',
@@ -55,9 +54,6 @@ router.get("/category/:id?", (req, res, next) => {
             let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
             res.send(result);
         });
-    } else {
-        res.send({message: "please input param of category id for singer -> 'id'"});
-    }
 });
 
 module.exports = router;
