@@ -24,6 +24,38 @@ router.get("/detail/:id?", (req, res, next) => {
         });
     }
 });
+//最新mv
+router.get("/first", (req, res, next) => {
+    const data = {
+        // 'offset': query.offset || 0,
+        area: req.query.area || '',
+        limit: req.query.limit || 30,
+        total: true
+    };
+    request('POST', `https://interface.music.163.com/weapi/mv/first`, data, {
+        crypto: 'weapi',
+        ua:"pc"
+    }).then(data=>{
+        let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
+        res.send(result);
+    });
+});
+//mv排行榜
+router.get("/topList", (req, res, next) => {
+    const data = {
+        area: req.query.area || '',
+        limit: req.query.limit || 30,
+        offset: req.query.offset || 0,
+        total: true
+    };
+    request('POST', `https://music.163.com/weapi/mv/toplist`, data, {
+        crypto: 'weapi',
+        ua:"pc"
+    }).then(data=>{
+        let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
+        res.send(result);
+    });
+});
 //获取相关的mv
 //n-mvlist
 //https://music.163.com/weapi/cloudvideo/v1/allvideo/rcmd

@@ -9,6 +9,7 @@ let basicMsg=($,id)=>{
     let names=detail.find(".btm");
     let name=names.find("h2").text();
     let subName=names.find("h3")?names.find("h3").attr("title"):null;
+    console.log(detail.find("img").attr("src"));
     let picUrl=detail.find("img").attr("src").replace("?param=640y300","");
     let basicMsg={
         name,subName,picUrl,id
@@ -36,6 +37,8 @@ router.get("/popSongs/:id?",(req,res,next)=>{
 //所有专辑
 router.get("/albums/:id?",(req,res,next)=>{
     let id = req.params.id;
+    let limit = parseInt(req.query.limit||30);
+    let offset = parseInt(req.query.offset||0);
     if (id) {
         //m-song-module
         request("get", "https://music.163.com/artist/album?id=" + id, {}, {ua: "pc"}).then(async data => {
@@ -49,7 +52,22 @@ router.get("/albums/:id?",(req,res,next)=>{
             let albums = await getAll("album", req.params.id, total);
             allAlbums.albums = albums;
             allAlbums.count = albums.length;
-            res.send(allAlbums);
+            let arr={desc: "allAlbums", count: allAlbums.count, basic, albums: [],more:true};
+            if (limit+offset>allAlbums.albums.length){
+                arr.more=false;
+            }
+            if (limit>allAlbums.albums.length){
+                limit=allAlbums.albums.length;
+            }
+            if (limit>allAlbums.albums.length-offset){
+                limit=allAlbums.albums.length-offset;
+            }
+
+            console.log(limit);
+            for (let i = offset; i < limit+offset; i++) {
+                arr.albums.push(allAlbums.albums[i]);
+            }
+            res.send(arr);
         });
     } else {
         res.send({message: "please input param of artist -> 'id'"});
@@ -58,6 +76,8 @@ router.get("/albums/:id?",(req,res,next)=>{
 //所有mv
 router.get("/mvs/:id?",(req,res,next)=>{
     let id = req.params.id;
+    let limit = parseInt(req.query.limit||30);
+    let offset = parseInt(req.query.offset||0);
     if (id) {
         //m-song-module
         request("get", "https://music.163.com/artist/mv?id=" + id, {}, {ua: "pc"}).then(async data => {
@@ -74,7 +94,24 @@ router.get("/mvs/:id?",(req,res,next)=>{
             let mvs = await getAll("mv", req.params.id, total);
             allMvs.mvs = mvs;
             allMvs.count = mvs.length;
-            res.send(allMvs);
+
+            let arr={desc: "allAlbums", count: allMvs.count, basic, mvs: [],hasMore:true};
+            if (limit+offset>allMvs.mvs.length){
+                arr.hasMore=false;
+            }
+            if (limit>allMvs.mvs.length){
+                limit=allMvs.mvs.length;
+            }
+            if (limit>allMvs.mvs.length-offset){
+                limit=allMvs.mvs.length-offset;
+            }
+
+            console.log(limit);
+            for (let i = offset; i < limit+offset; i++) {
+                arr.mvs.push(allMvs.mvs[i]);
+            }
+
+            res.send(arr);
         });
     } else {
         res.send({message: "please input param of artist -> 'id'"});
@@ -87,11 +124,13 @@ router.get("/desc/:id?",(req,res,next)=>{
         //n-artdesc
         request("get", "https://music.163.com/artist/desc?id=" + req.params.id, {}, {ua: "pc"}).then(data => {
             let $ = cheerio.load(data.body);
+            let basic = basicMsg($,parseInt(id));
             let desc = {
-                messages: []
+                messages: [],basic
             };
             $(".n-artdesc").find("h2").each((index, ele) => {
                 let title = $(ele).text();
+                // let basic = basicMsg($,parseInt(id));
                 let text = entities.decode($(ele).next().html()).replace(/<br>/g, "\n");
                 desc.messages.push({
                     title, text

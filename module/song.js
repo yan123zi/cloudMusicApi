@@ -3,26 +3,27 @@ const router = express.Router();
 const request = require("../utlis/request");
 const cheerio = require("cheerio");
 //https://music.163.com/song?id=210674
-const getSongDetail=require("../utlis/songDetails");
+const getSongDetail = require("../utlis/songDetails");
 //歌曲详情
-router.get("/detail/:id?",async (req,res,next)=>{
-    let id=req.params.id;
-    if (id) {
-        let result = await getSongDetail(req.params.id);
-        // result.id = parseInt(req.params.id);
-        console.log(getSongDetail);
-        res.send(result);
-    }else {
-        res.send({
-           message:"please input param of song -> 'id'"
-        });
+router.get("/detail/:id?", async (req, res, next) => {
+    req.query.ids = req.query.ids.split(/\s*,\s*/)
+    const data = {
+        c: '[' + req.query.ids.map(id => ('{"id":' + id + '}')).join(',') + ']',
+        ids: '[' + req.query.ids.join(',') + ']'
     }
+    return request(
+        'POST', `https://music.163.com/weapi/v3/song/detail`, data,
+        {crypto: 'weapi', ua:"pc"}
+    ).then(data=>{
+        let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
+        res.send(result);
+    });
 });
 //歌曲歌词
-router.get("/lyric/:id?",(req,res,next)=>{
+router.get("/lyric/:id?", (req, res, next) => {
     // https://music.163.com/weapi/song/lyric?csrf_token=
     //{"id":"545592301","lv":-1,"tv":-1,"csrf_token":""}
-    let id=req.params.id;
+    let id = req.params.id;
     if (id) {
         let data = {
             id: req.params.id,
@@ -33,15 +34,15 @@ router.get("/lyric/:id?",(req,res,next)=>{
             let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
             res.send(result);
         });
-    }else {
+    } else {
         res.send({
-            message:"please input param of song -> 'id'"
+            message: "please input param of song -> 'id'"
         });
     }
 });
 //歌曲相似,歌单包含
-router.get("/simiAndcon/:id?",(req,res,next)=>{
-    let id=req.params.id;
+router.get("/simiAndcon/:id?", (req, res, next) => {
+    let id = req.params.id;
     if (id) {
         request("get", "https://music.163.com/song?id=" + req.params.id, {}, {ua: "pc"}).then(data => {
             let $ = cheerio.load(data.body);
@@ -81,17 +82,17 @@ router.get("/simiAndcon/:id?",(req,res,next)=>{
             });
             res.send(songSiCon);
         });
-    }else {
+    } else {
         res.send({
-            message:"please input param of song -> 'id'"
+            message: "please input param of song -> 'id'"
         });
     }
 });
 //歌曲外链
-router.get("/url/:id?",(req,res,next)=>{
+router.get("/url/:id?", (req, res, next) => {
     //https://music.163.com/weapi/song/enhance/player/url/v1?csrf_token=
     //{"ids":"[1400436688]","level":"standard","encodeType":"aac","csrf_token":""}
-    let id=req.params.id;
+    let id = req.params.id;
     if (id) {
         const data = {
             ids: "[" + req.params.id + "]",
@@ -105,10 +106,10 @@ router.get("/url/:id?",(req,res,next)=>{
             let result = JSON.parse(data.body.replace(/[\r\n]/g, ""));
             res.send(result);
         });
-    }else {
+    } else {
         res.send({
-            message:"please input param of song -> 'id'"
+            message: "please input param of song -> 'id'"
         });
     }
 });
-module.exports=router;
+module.exports = router;

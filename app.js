@@ -5,6 +5,7 @@ const fs = require("fs");
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const app = express();
+const cache = require('apicache').middleware
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'ejs');
@@ -35,6 +36,15 @@ app.use((req, res, next) => {
     req.method === 'OPTIONS' ? res.status(204).end() : next()
 });
 
+// cookie parser
+app.use((req, res, next) => {
+    req.cookies = {}, (req.headers.cookie || '').split(/\s*;\s*/).forEach(pair => {
+        let crack = pair.indexOf('=')
+        if(crack < 1 || crack == pair.length - 1) return
+        req.cookies[decodeURIComponent(pair.slice(0, crack)).trim()] = decodeURIComponent(pair.slice(crack + 1)).trim()
+    })
+    next()
+})
 
 fs.readdirSync(path.join(__dirname,'module')).reverse().forEach(file=>{
   if (!file.endsWith('.js')) return;

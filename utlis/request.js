@@ -38,6 +38,17 @@ const createRequest = (method, url, data, options) => {
         if (url.includes('music.163.com'))
             headers['Referer'] = 'https://music.163.com';
 
+        if (typeof options.cookie === 'object')
+            headers['Cookie'] = Object.keys(options.cookie)
+                .map(
+                    key =>
+                        encodeURIComponent(key) +
+                        '=' +
+                        encodeURIComponent(options.cookie[key])
+                )
+                .join('; ')
+        else if (options.cookie) headers['Cookie'] = options.cookie
+
         if (options.crypto==="weapi"){
             data=weapi(data);
             // console.log(data)
@@ -69,6 +80,9 @@ const createRequest = (method, url, data, options) => {
                     answer.body = {code: 502, msg: err.stack};
                     reject(answer)
                 } else {
+                    answer.cookie = (res.headers['set-cookie'] || []).map(x =>
+                        x.replace(/\s*Domain=[^(;|$)]+;*/, '')
+                    )
                     answer.status=res.statusCode;
                     answer.status =
                         100 < answer.status && answer.status < 600 ? answer.status : 400;

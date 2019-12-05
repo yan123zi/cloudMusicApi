@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const request = require("../utlis/request");
 const cheerio = require("cheerio");
-const getSongDetail = require("../utlis/songDetails");
 //获取歌单详情
 router.get("/detail/:id?", (req, res, next) => {
     let id = parseInt(req.params.id);

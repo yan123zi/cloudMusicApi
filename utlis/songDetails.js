@@ -2,7 +2,6 @@ const request = require("../utlis/request");
 const cheerio = require("cheerio");
 let getSongDetail=async (url)=>{
     return await request("get","https://music.163.com/song?id="+url,{},{ua:"pc"}).then(data=>{
-        console.log(url)
         let $=cheerio.load(data.body);
         let picUrl=$(".j-img").attr("data-src");
         let detail=$("div.cnt").eq(0);
@@ -31,7 +30,6 @@ let getSongDetail=async (url)=>{
         let songDetail={
             name,picUrl, mv, artist: arts, album: {albumName, albumId}, time,id:parseInt(url)
         };
-        console.log(songDetail)
         return songDetail;
     });
 };

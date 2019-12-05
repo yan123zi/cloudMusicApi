@@ -33,10 +33,12 @@ router.get("/categories",(req,res,next)=>{
 //获取所有歌单的信息（分页）
 router.get("/list",(req,res,next)=>{
     //m-pl-container
+    let limit=req.query.limit?"&limit="+req.query.limit:"";
     let offset=req.query.offset?"&offset="+req.query.offset:"";
     let cat=req.query.cat?"&cat="+req.query.cat:"";
-    let param=offset+encodeURI(cat);
-    let url="https://music.163.com/discover/playlist/?order=hot"+param;
+    let order=req.query.order||"hot";
+    let param=limit+offset+encodeURI(cat);
+    let url="https://music.163.com/discover/playlist/?order="+order+""+param;
     console.log(url);
     request("get",url,{},{ua:"pc"}).then(data=>{
         let $=cheerio.load(data.body);
@@ -47,7 +49,7 @@ router.get("/list",(req,res,next)=>{
           body:[]
         };
         $("#m-pl-container").find("li").each((index,ele)=>{
-            let picUrl=$("img").attr("src").replace("?param=140y140","");
+            let picUrl=$(ele).find("img").attr("src").replace("?param=140y140","");
             let a=$(ele).find(".msk");
             let title=a.attr("title");
             let id=parseInt(a.attr("href").replace("/playlist?id=",""));

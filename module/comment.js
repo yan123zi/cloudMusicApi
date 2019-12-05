@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const request = require("../utlis/request");
-//歌单评论
+//获取各种类型的评论
 router.get("/:id?/:type?", (req, res, next) => {
     //https://music.163.com/weapi/v1/resource/comments/A_PL_0_19723756?csrf_token=
     let id = req.params.id;

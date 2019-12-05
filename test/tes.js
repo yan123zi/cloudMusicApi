@@ -54,5 +54,27 @@ const topList = {
     36: '3001890046', //云音乐ACG VOCALOID榜
 
 }
-const data = {rid:"R_SO_4_571338279",offset:0,total:true,limit:20,csrf_token:""};
-console.log(crypto(data));
+// const data = {rid:"R_SO_4_571338279",offset:0,total:true,limit:20,csrf_token:""};
+// console.log(crypto(data));
+
+let log = console.log.bind(console);
+let person = [
+    {id: 0, name: "小明"},
+    {id: 1, name: "小张"},
+    {id: 2, name: "小李"},
+    {id: 3, name: "小孙"},
+    {id: 1, name: "小周"},
+    {id: 2, name: "小陈"},
+];
+let body=[
+    {id: 0, name: "小明"},
+    {id: 1, name: "小张"},
+];
+person.push.apply(person,body);
+let obj = {};
+
+person = person.reduce((cur,next) => {
+    obj[next.id] ? "" : obj[next.id] = true && cur.push(next);
+    return cur;
+},[]) //设置cur默认类型为数组，并且初始值为空的数组
+log(person);
